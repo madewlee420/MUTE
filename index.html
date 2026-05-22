@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MUTE — Wear Less. Say More.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,700;0,900;1,900&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black:      #080808;
+      --white:      #f5f5f5;
+      --grey-dark:  #111111;
+      --grey-mid:   #555555;
+      --grey-light: #aaaaaa;
+      --border:     #1e1e1e;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── CURSOR ──────────────────────────────────────── */
+    .cursor {
+      width: 8px; height: 8px;
+      background: var(--white);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.15s ease, width 0.3s, height 0.3s;
+      transform: translate(-50%, -50%);
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(245,245,245,0.4);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transition: transform 0.4s ease, width 0.3s, height 0.3s, border-color 0.3s;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ── NAVIGATION ──────────────────────────────────── */
+    nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 900;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 60px;
+      transition: background 0.5s, padding 0.4s, border-color 0.5s;
+      border-bottom: 1px solid transparent;
+    }
+    nav.scrolled {
+      background: rgba(8,8,8,0.96);
+      backdrop-filter: blur(12px);
+      padding: 18px 60px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.7rem;
+      letter-spacing: 0.35em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
+    .nav-links a {
+      color: var(--white);
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      opacity: 0.55;
+      transition: opacity 0.25s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0; right: 100%;
+      height: 1px;
+      background: var(--white);
+      transition: right 0.3s ease;
+    }
+    .nav-links a:hover { opacity: 1; }
+    .nav-links a:hover::after { right: 0; }
+
+    /* ── HERO ────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 60px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle grid texture */
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245,245,245,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,245,245,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: slideUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards 0.2s;
+    }
+    .hero-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(6rem, 20vw, 20rem);
+      line-height: 0.88;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: slideUp 1s cubic-bezier(0.22,1,0.36,1) forwards 0.4s;
+    }
+    .hero-title .italic {
+      font-style: italic;
+      color: var(--grey-mid);
+    }
+    .hero-divider {
+      width: 80px; height: 1px;
+      background: var(--grey-mid);
+      margin: 36px 0;
+      opacity: 0;
+      animation: slideUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards 0.6s;
+    }
+    .hero-tagline {
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--grey-light);
+      opacity: 0;
+      animation: slideUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards 0.75s;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      margin-top: 52px;
+      opacity: 0;
+      animation: slideUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards 0.95s;
+    }
+    .btn-outline {
+      display: inline-block;
+      padding: 13px 36px;
+      border: 1px solid var(--white);
+      color: var(--white);
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      transition: background 0.35s, color 0.35s;
+    }
+    .btn-outline:hover { background: var(--white); color: var(--black); }
+    .hero-note {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: var(--grey-mid);
+    }
+
+    .hero-meta {
+      position: absolute;
+      right: 60px;
+      bottom: 60px;
+      text-align: right;
+      opacity: 0;
+      animation: slideUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards 1.2s;
+    }
+    .hero-meta p {
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      line-height: 2;
+    }
+    .hero-scroll-line {
+      position: absolute;
+      left: 60px;
+      bottom: 0;
+      width: 1px;
+      height: 90px;
+      background: linear-gradient(to bottom, transparent, var(--grey-mid));
+      opacity: 0;
+      animation: slideUp 1s ease forwards 1.5s;
+    }
+
+    /* ── MARQUEE ─────────────────────────────────────── */
+    .marquee-section {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      padding: 14px 0;
+      background: var(--grey-dark);
+    }
+    .marquee-track {
+      display: flex;
+      white-space: nowrap;
+      animation: marquee 25s linear infinite;
+      width: max-content;
+    }
+    .marquee-item {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      padding: 0 48px;
+    }
+    .marquee-item b { color: var(--white); font-weight: 700; }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── SECTIONS ────────────────────────────────────── */
+    section { padding: 120px 60px; }
+
+    .sec-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 64px;
+    }
+    .sec-label::before {
+      content: '';
+      width: 36px; height: 1px;
+      background: var(--grey-mid);
+      flex-shrink: 0;
+    }
+
+    /* ── ABOUT ───────────────────────────────────────── */
+    #about { border-top: 1px solid var(--border); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 100px;
+      align-items: start;
+    }
+    .about-heading {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.8rem, 5.5vw, 5rem);
+      line-height: 1;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+    .about-heading em {
+      font-style: italic;
+      color: var(--grey-mid);
+    }
+    .about-body {
+      color: rgba(245,245,245,0.55);
+      font-size: 0.95rem;
+      line-height: 1.9;
+    }
+    .about-body p + p { margin-top: 18px; }
+    .about-mission {
+      margin-top: 40px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: rgba(245,245,245,0.8);
+      font-weight: 300;
+      font-style: italic;
+    }
+
+    .values-col h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      margin-bottom: 32px;
+    }
+    .values-list { list-style: none; }
+    .values-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.25s;
+    }
+    .values-list li:hover { color: var(--grey-light); }
+    .values-list li .num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: var(--border);
+      transition: color 0.25s;
+    }
+    .values-list li:hover .num { color: var(--grey-mid); }
+
+    .audience-block {
+      margin-top: 48px;
+      padding: 28px;
+      background: var(--grey-dark);
+      border: 1px solid var(--border);
+    }
+    .audience-block h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      margin-bottom: 16px;
+    }
+    .audience-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .tag {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      color: var(--grey-light);
+    }
+
+    /* ── VISUALS ─────────────────────────────────────── */
+    #visuals { border-top: 1px solid var(--border); }
+
+    .visuals-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(2, 320px);
+      gap: 3px;
+    }
+
+    .v-card {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      background: #111;
+    }
+    .v-card:nth-child(1) { grid-column: span 5; grid-row: span 2; }
+    .v-card:nth-child(2) { grid-column: span 4; }
+    .v-card:nth-child(3) { grid-column: span 3; }
+    .v-card:nth-child(4) { grid-column: span 3; }
+    .v-card:nth-child(5) { grid-column: span 4; }
+
+    .v-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94);
+      filter: brightness(0.9);
+    }
+    .v-card:hover img {
+      transform: scale(1.04);
+      filter: brightness(1);
+    }
+
+    /* CSS art backgrounds */
+    .bg-1 {
+      background: #0e0e0e;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bg-1::after {
+      content: 'M';
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 18rem;
+      color: rgba(245,245,245,0.06);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+    .bg-2 { background: linear-gradient(160deg, #181818 0%, #0a0a0a 100%); }
+    .bg-3 {
+      background: #111;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 30px,
+        rgba(245,245,245,0.03) 30px, rgba(245,245,245,0.03) 31px
+      );
+    }
+    .bg-4 {
+      background: radial-gradient(ellipse at 20% 80%, #1c1c1c 0%, #080808 70%);
+    }
+    .bg-5 {
+      background: #0e0e0e;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(245,245,245,0.015) 0, rgba(245,245,245,0.015) 1px, transparent 0, transparent 50%);
+      background-size: 18px 18px;
+    }
+
+    .v-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 24px;
+      transition: background 0.4s;
+    }
+    .v-card:hover .v-overlay { background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 65%); }
+
+    .v-tag {
+      font-size: 0.62rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      margin-bottom: 6px;
+    }
+    .v-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* geometric decorations */
+    .geo-circle {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px; height: 120px;
+      border: 1px solid rgba(245,245,245,0.06);
+      border-radius: 50%;
+    }
+    .geo-rect {
+      position: absolute;
+      top: 28px; right: 28px;
+      width: 40px; height: 40px;
+      border: 1px solid rgba(245,245,245,0.07);
+    }
+    .geo-line {
+      position: absolute;
+      top: 50%; left: 20%;
+      width: 60%;
+      height: 1px;
+      background: rgba(245,245,245,0.05);
+    }
+
+    /* ── CTA ─────────────────────────────────────────── */
+    #cta {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 160px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    #cta::before {
+      content: 'MUTE';
+      position: absolute;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 28vw;
+      color: rgba(245,245,245,0.02);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: 0.1em;
+    }
+    .cta-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      margin-bottom: 28px;
+    }
+    .cta-heading {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(3.5rem, 9vw, 9rem);
+      line-height: 0.95;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+    .cta-heading em { font-style: italic; color: var(--grey-mid); }
+    .cta-sub {
+      color: var(--grey-light);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 52px;
+    }
+    .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-fill {
+      display: inline-block;
+      padding: 15px 52px;
+      background: var(--white);
+      color: var(--black);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .btn-fill:hover { background: var(--grey-light); transform: translateY(-2px); }
+
+    .cta-stat-row {
+      display: flex;
+      justify-content: center;
+      gap: 80px;
+      margin-top: 80px;
+      padding-top: 64px;
+      border-top: 1px solid var(--border);
+    }
+    .cta-stat h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 3rem;
+      letter-spacing: -0.02em;
+    }
+    .cta-stat p {
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      margin-top: 4px;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 60px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 24px;
+    }
+    .footer-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: 0.45em;
+    }
+    .footer-copy {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: var(--grey-mid);
+      text-align: center;
+    }
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+      justify-content: flex-end;
+    }
+    .footer-links a {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      text-decoration: none;
+      transition: color 0.25s;
+    }
+    .footer-links a:hover { color: var(--white); }
+
+    /* ── PRODUCTS ─────────────────────────────────── */
+    #products { border-top: 1px solid var(--border); }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 0;
+    }
+
+    .product-card {
+      background: var(--grey-dark);
+      overflow: hidden;
+      transition: background 0.4s;
+      cursor: pointer;
+    }
+    .product-card:hover { background: #0f0f0f; }
+
+    .product-visual {
+      height: 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      transition: opacity 0.3s;
+    }
+    .product-card:hover .product-visual { opacity: 0.85; }
+
+    .product-label-tag {
+      position: absolute;
+      top: 16px; left: 16px;
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+    }
+
+    .product-info {
+      padding: 20px 24px 24px;
+    }
+
+    .product-category {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      margin-bottom: 6px;
+    }
+
+    .product-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+
+    .product-colour {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--grey-mid);
+      margin-bottom: 16px;
+    }
+
+    .product-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      color: var(--white);
+    }
+
+    .product-btn {
+      padding: 7px 18px;
+      border: 1px solid var(--border);
+      background: none;
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .product-btn:hover {
+      border-color: var(--white);
+      color: var(--white);
+    }
+
+    /* ── PRODUCTS ─────────────────────────────────── */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.9s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.9s cubic-bezier(0.22,1,0.36,1);
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.35s; }
+
+    /* ── MOBILE ──────────────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; }
+      section { padding: 80px 24px; }
+      #hero { padding: 100px 24px 60px; }
+      .hero-scroll-line, .hero-meta { display: none; }
+      .about-grid { grid-template-columns: 1fr; gap: 48px; }
+      .visuals-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+      }
+      .v-card:nth-child(1) { grid-column: span 2; grid-row: span 1; height: 260px; }
+      .v-card:nth-child(n) { grid-column: span 1; height: 200px; }
+      .cta-stat-row { gap: 32px; flex-wrap: wrap; }
+      footer { grid-template-columns: 1fr; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom cursor (desktop only) -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- ── NAVIGATION ───────────────────────────────────── -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">MUTE</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#visuals">Campaign</a></li>
+      <li><a href="#products">Collection</a></li>
+      <li><a href="#cta">Join</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── HERO ─────────────────────────────────────────── -->
+  <section id="hero">
+    <p class="hero-eyebrow">SS26 — The Silence Collection</p>
+    <h1 class="hero-title">
+      MU<span class="italic">TE</span>
+    </h1>
+    <div class="hero-divider"></div>
+    <p class="hero-tagline">Wear Less &nbsp;·&nbsp; Say More</p>
+    <div class="hero-actions">
+      <a href="#about" class="btn-outline">Discover the Brand</a>
+      <span class="hero-note">Drop date — 22.06.2026</span>
+    </div>
+    <div class="hero-scroll-line"></div>
+    <div class="hero-meta">
+      <p>Minimal Streetwear</p>
+      <p>Est. 2026</p>
+      <p>KL / Global</p>
+    </div>
+  </section>
+
+  <!-- ── MARQUEE ───────────────────────────────────────── -->
+  <div class="marquee-section">
+    <div class="marquee-track">
+      <span class="marquee-item">Wear Less <b>·</b></span>
+      <span class="marquee-item">Say More <b>·</b></span>
+      <span class="marquee-item">The Silence Collection <b>·</b></span>
+      <span class="marquee-item">MUTE SS26 <b>·</b></span>
+      <span class="marquee-item">Monochrome Identity <b>·</b></span>
+      <span class="marquee-item">Form Over Noise <b>·</b></span>
+      <span class="marquee-item">Wear Less <b>·</b></span>
+      <span class="marquee-item">Say More <b>·</b></span>
+      <span class="marquee-item">The Silence Collection <b>·</b></span>
+      <span class="marquee-item">MUTE SS26 <b>·</b></span>
+      <span class="marquee-item">Monochrome Identity <b>·</b></span>
+      <span class="marquee-item">Form Over Noise <b>·</b></span>
+    </div>
+  </div>
+
+  <!-- ── ABOUT ─────────────────────────────────────────── -->
+  <section id="about">
+    <div class="sec-label">About the Brand</div>
+    <div class="about-grid">
+      <div class="reveal">
+        <h2 class="about-heading">
+          Silence<br>Is the<br><em>Statement.</em>
+        </h2>
+        <div class="about-body">
+          <p>MUTE is a fictional streetwear brand built around a radical idea: that in a world overloaded with noise, the most powerful statement you can make is restraint. We design for young urban creatives aged 20–27 who choose intention over trend, and substance over spectacle.</p>
+          <p>Our garments are monochrome by design — not by limitation. Every silhouette, every stitch, every deliberate void in our compositions carries meaning. We don't compete for attention. We don't need to.</p>
+          <p>MUTE is for those who already know who they are.</p>
+        </div>
+        <blockquote class="about-mission">
+          "The quieter you are, the more you are heard."<br>
+          <span style="font-size:0.75rem;letter-spacing:0.2em;font-style:normal;color:var(--grey-mid)">— MUTE Brand Manifesto</span>
+        </blockquote>
+      </div>
+
+      <div class="reveal reveal-d2">
+        <div class="values-col">
+          <h3>Brand Values</h3>
+          <ul class="values-list">
+            <li>Minimalism <span class="num">01</span></li>
+            <li>Intentionality <span class="num">02</span></li>
+            <li>Restraint <span class="num">03</span></li>
+            <li>Authenticity <span class="num">04</span></li>
+            <li>Craft <span class="num">05</span></li>
+          </ul>
+        </div>
+
+        <div class="audience-block">
+          <h3>Target Audience</h3>
+          <p style="font-size:0.85rem;color:rgba(245,245,245,0.55);line-height:1.7">Young adults, 20–27. Urban creatives, digital natives, minimal aesthetics. Anti-hype. Quality-driven.</p>
+          <div class="audience-tags">
+            <span class="tag">Designers</span>
+            <span class="tag">Artists</span>
+            <span class="tag">Students</span>
+            <span class="tag">Creatives</span>
+            <span class="tag">Urban</span>
+            <span class="tag">Anti-trend</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── VISUALS ────────────────────────────────────────── -->
+  <section id="visuals">
+    <div class="sec-label">Campaign Visuals — SS26</div>
+    <div class="visuals-grid reveal">
+
+      <!-- Card 1 — A3 Poster (large, spans 2 rows) -->
+      <div class="v-card">
+        <img src="MUTE-Moodboard.jpg" alt="MUTE A3 Campaign Poster"/>
+        <div class="v-overlay">
+          <div class="v-tag">A3 Campaign Poster</div>
+          <div class="v-name">The Silence Collection</div>
+        </div>
+      </div>
+
+      <!-- Card 2 — Web Banner -->
+      <div class="v-card">
+        <img src="MUTE-web-banner.jpg" alt="MUTE Website Hero Banner"/>
+        <div class="v-overlay">
+          <div class="v-tag">Web Banner</div>
+          <div class="v-name">Hero Image</div>
+        </div>
+      </div>
+
+      <!-- Card 3 — Social Square -->
+      <div class="v-card">
+        <img src="MUTE-social-square.jpg" alt="MUTE Instagram Post"/>
+        <div class="v-overlay">
+          <div class="v-tag">Social — Square</div>
+          <div class="v-name">Instagram Post</div>
+        </div>
+      </div>
+
+      <!-- Card 4 — Social Story -->
+      <div class="v-card">
+        <img src="MUTE-social-story.jpg" alt="MUTE Instagram Story"/>
+        <div class="v-overlay">
+          <div class="v-tag">Social — Story</div>
+          <div class="v-name">Instagram Story</div>
+        </div>
+      </div>
+
+      <!-- Card 5 — Logo -->
+      <div class="v-card" style="background:#080808;">
+        <img src="MUTE.jpg" alt="MUTE Brand Logo" style="object-fit:contain; padding:32px; background:#080808;"/>
+        <div class="v-overlay">
+          <div class="v-tag">Brand Identity</div>
+          <div class="v-name">Logo — Ghost Mark</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── PRODUCTS ─────────────────────────────────────── -->
+  <section id="products">
+    <div class="sec-label">The Silence Collection — SS26</div>
+
+    <div class="products-grid reveal">
+
+      <!-- 1: Classic Tee -->
+      <div class="product-card">
+        <div class="product-visual">
+          <span class="product-label-tag">New Arrival</span>
+          <svg viewBox="0 0 140 140" width="140" height="140">
+            <path d="M70,22 C64,22 58,24 52,30 L22,50 L34,66 L34,112 L106,112 L106,66 L118,50 L88,30 C82,24 76,22 70,22Z"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2" stroke-linejoin="round"/>
+            <path d="M52,30 C55,38 62,42 70,42 C78,42 85,38 88,30"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2"/>
+            <text x="70" y="84" font-family="'Barlow Condensed',sans-serif"
+              font-weight="900" font-size="10" fill="none" stroke="#2A2A2A"
+              stroke-width="0.5" letter-spacing="2" text-anchor="middle">MUTE</text>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-category">Tops</div>
+          <div class="product-name">Classic Tee</div>
+          <div class="product-colour">Obsidian Black</div>
+          <div class="product-footer">
+            <span class="product-price">RM 189</span>
+            <button class="product-btn">Wishlist</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2: Silence Hoodie -->
+      <div class="product-card">
+        <div class="product-visual">
+          <span class="product-label-tag">Bestseller</span>
+          <svg viewBox="0 0 140 140" width="140" height="140">
+            <path d="M70,14 C60,14 52,18 48,26 L22,50 L34,66 L34,112 L106,112 L106,66 L118,50 L92,26 C88,18 80,14 70,14Z"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2" stroke-linejoin="round"/>
+            <!-- Hood -->
+            <path d="M48,26 C50,36 58,42 70,42 C82,42 90,36 92,26 C88,16 80,10 70,10 C60,10 52,16 48,26Z"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2"/>
+            <!-- Drawstring -->
+            <line x1="64" y1="42" x2="60" y2="52" stroke="#F5F5F5" stroke-width="0.8" opacity="0.5"/>
+            <line x1="76" y1="42" x2="80" y2="52" stroke="#F5F5F5" stroke-width="0.8" opacity="0.5"/>
+            <!-- Kangaroo pocket -->
+            <path d="M50,80 L50,96 L90,96 L90,80" fill="none" stroke="#2A2A2A" stroke-width="0.8"/>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-category">Outerwear</div>
+          <div class="product-name">Silence Hoodie</div>
+          <div class="product-colour">Charcoal Grey</div>
+          <div class="product-footer">
+            <span class="product-price">RM 349</span>
+            <button class="product-btn">Wishlist</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3: Null Crewneck -->
+      <div class="product-card">
+        <div class="product-visual">
+          <span class="product-label-tag">Limited</span>
+          <svg viewBox="0 0 140 140" width="140" height="140">
+            <path d="M70,26 C65,26 60,27 55,30 L22,50 L34,66 L34,112 L106,112 L106,66 L118,50 L85,30 C80,27 75,26 70,26Z"
+              fill="none" stroke="#AAAAAA" stroke-width="1.2" stroke-linejoin="round"/>
+            <path d="M55,30 C57,36 63,40 70,40 C77,40 83,36 85,30"
+              fill="none" stroke="#AAAAAA" stroke-width="1.2"/>
+            <!-- ∅ mark on chest -->
+            <circle cx="70" cy="74" r="12" fill="none" stroke="#555555" stroke-width="0.9"/>
+            <line x1="62" y1="82" x2="78" y2="66" stroke="#555555" stroke-width="0.9" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-category">Tops</div>
+          <div class="product-name">Null Crewneck</div>
+          <div class="product-colour">Off White</div>
+          <div class="product-footer">
+            <span class="product-price">RM 289</span>
+            <button class="product-btn">Wishlist</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4: Form Sweatpants -->
+      <div class="product-card">
+        <div class="product-visual">
+          <svg viewBox="0 0 140 140" width="140" height="140">
+            <!-- Waistband -->
+            <rect x="30" y="20" width="80" height="12" fill="none" stroke="#F5F5F5" stroke-width="1.2" rx="1"/>
+            <!-- Body -->
+            <path d="M30,32 L28,80 L56,80 L70,110 L84,80 L112,80 L110,32Z"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2" stroke-linejoin="round"/>
+            <!-- Centre seam -->
+            <line x1="70" y1="32" x2="70" y2="80" stroke="#2A2A2A" stroke-width="0.8"/>
+            <!-- Drawstring -->
+            <line x1="58" y1="26" x2="54" y2="34" stroke="#F5F5F5" stroke-width="0.8" opacity="0.5"/>
+            <line x1="82" y1="26" x2="86" y2="34" stroke="#F5F5F5" stroke-width="0.8" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-category">Bottoms</div>
+          <div class="product-name">Form Sweatpant</div>
+          <div class="product-colour">Obsidian Black</div>
+          <div class="product-footer">
+            <span class="product-price">RM 259</span>
+            <button class="product-btn">Wishlist</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5: Ghost Long Sleeve -->
+      <div class="product-card">
+        <div class="product-visual">
+          <svg viewBox="0 0 140 140" width="140" height="140">
+            <path d="M70,24 C65,24 60,25 56,28 L10,52 L18,68 L38,60 L38,112 L102,112 L102,60 L122,68 L130,52 L84,28 C80,25 75,24 70,24Z"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2" stroke-linejoin="round"/>
+            <path d="M56,28 C58,34 63,38 70,38 C77,38 82,34 84,28"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2"/>
+            <text x="70" y="82" font-family="'Barlow Condensed',sans-serif"
+              font-weight="900" font-size="8" fill="none" stroke="#2A2A2A"
+              stroke-width="0.5" letter-spacing="2" text-anchor="middle">SILENCE</text>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-category">Tops</div>
+          <div class="product-name">Ghost Long Sleeve</div>
+          <div class="product-colour">Smoke Grey</div>
+          <div class="product-footer">
+            <span class="product-price">RM 219</span>
+            <button class="product-btn">Wishlist</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6: The Silence Cap -->
+      <div class="product-card">
+        <div class="product-visual">
+          <span class="product-label-tag">Accessory</span>
+          <svg viewBox="0 0 140 140" width="140" height="140">
+            <!-- Cap crown -->
+            <path d="M30,72 C30,48 48,32 70,32 C92,32 110,48 110,72Z"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2"/>
+            <!-- Brim -->
+            <path d="M24,74 C24,70 28,68 30,72 L110,72 C112,68 116,70 116,74 C116,78 112,80 110,76 L30,76 C28,80 24,78 24,74Z"
+              fill="none" stroke="#F5F5F5" stroke-width="1.2"/>
+            <!-- Crown seam lines -->
+            <line x1="70" y1="32" x2="70" y2="72" stroke="#2A2A2A" stroke-width="0.7"/>
+            <path d="M46,40 C50,56 60,66 70,68" fill="none" stroke="#2A2A2A" stroke-width="0.7"/>
+            <path d="M94,40 C90,56 80,66 70,68" fill="none" stroke="#2A2A2A" stroke-width="0.7"/>
+            <!-- ∅ mark on front -->
+            <circle cx="70" cy="55" r="9" fill="none" stroke="#444444" stroke-width="0.8"/>
+            <line x1="64" y1="61" x2="76" y2="49" stroke="#444444" stroke-width="0.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="product-info">
+          <div class="product-category">Accessories</div>
+          <div class="product-name">The Silence Cap</div>
+          <div class="product-colour">Obsidian Black</div>
+          <div class="product-footer">
+            <span class="product-price">RM 129</span>
+            <button class="product-btn">Wishlist</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── CTA ───────────────────────────────────────────── -->
+  <section id="cta">
+    <p class="cta-eyebrow reveal">The Silence Collection — SS26</p>
+    <h2 class="cta-heading reveal reveal-d1">
+      Join The<br><em>Movement.</em>
+    </h2>
+    <p class="cta-sub reveal reveal-d2">
+      Register now to receive early access to our debut collection drop.<br>
+      Minimal by nature. Limited by design.
+    </p>
+    <div class="cta-buttons reveal reveal-d3">
+      <a href="#" class="btn-fill">Register Your Interest</a>
+      <a href="#visuals" class="btn-outline">View Campaign</a>
+    </div>
+
+    <div class="cta-stat-row reveal">
+      <div class="cta-stat">
+        <h4>100%</h4>
+        <p>Monochrome Design</p>
+      </div>
+      <div class="cta-stat">
+        <h4>SS26</h4>
+        <p>Debut Collection</p>
+      </div>
+      <div class="cta-stat">
+        <h4>0</h4>
+        <p>Excess. Zero Noise.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ─────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-logo">MUTE</div>
+    <p class="footer-copy">
+      © 2026 MUTE Streetwear. All rights reserved.<br>
+      Fictional brand — created for academic purposes (Graphic Communication Assignment).
+    </p>
+    <ul class="footer-links">
+      <li><a href="#">Instagram</a></li>
+      <li><a href="#">TikTok</a></li>
+      <li><a href="#">Pinterest</a></li>
+    </ul>
+  </footer>
+
+  <script>
+    // ── Navbar scroll ──────────────────────────────────
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Reveal on scroll ───────────────────────────────
+    const reveals = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    reveals.forEach(el => io.observe(el));
+
+    // ── Custom cursor (desktop) ────────────────────────
+    const cur = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    window.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cur.style.left = mx + 'px';
+      cur.style.top  = my + 'px';
+    });
+
+    function animRing() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px';
+      ring.style.top  = ry + 'px';
+      requestAnimationFrame(animRing);
+    }
+    animRing();
+
+    document.querySelectorAll('a, button, .v-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cur.style.transform = 'translate(-50%,-50%) scale(2.5)';
+        ring.style.width = '60px';
+        ring.style.height = '60px';
+        ring.style.borderColor = 'rgba(245,245,245,0.2)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cur.style.transform = 'translate(-50%,-50%) scale(1)';
+        ring.style.width = '36px';
+        ring.style.height = '36px';
+        ring.style.borderColor = 'rgba(245,245,245,0.4)';
+      });
+    });
+  </script>
+</body>
+</html>
